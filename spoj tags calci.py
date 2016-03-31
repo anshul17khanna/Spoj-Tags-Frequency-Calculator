@@ -1,9 +1,23 @@
 import sys
+import socket
+
+REMOTE_SERVER = "http://www.google.com/"
+def is_connected():
+  try:
+    host = socket.gethostbyname(REMOTE_SERVER)
+    s = socket.create_connection((host, 80), 2)
+    return True
+  except:
+     pass
+  return False
+if(not is_connected()):
+    print "\nNo Internet Connection Found!!\n"
+    sys.exit(1)
 
 try:
     from mechanize import Browser
 except ImportError:
-    print "mechanize not installed, please install using :\npip install mechanize\n"
+    print "\nmechanize not installed, please install using :\npip install mechanize\n"
     sys.exit(1)
 
 br = Browser()
