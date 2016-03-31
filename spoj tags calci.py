@@ -1,17 +1,17 @@
 import sys
 import socket
 
-REMOTE_SERVER = "http://www.google.com/"
+REMOTE_SERVER = "www.google.com"
 def is_connected():
-  try:
-    host = socket.gethostbyname(REMOTE_SERVER)
-    s = socket.create_connection((host, 80), 2)
-    return True
-  except:
-     pass
-  return False
-if(not is_connected()):
-    print "\nNo Internet Connection Found!\n"
+    try:
+        host = socket.gethostbyname(REMOTE_SERVER)
+        s = socket.create_connection((host, 80), 2)
+        return True
+    except:
+        pass
+    return False
+if is_connected() is False:
+    print "\nNo Internet Connection!\n"
     sys.exit(1)
 
 try:
@@ -22,10 +22,12 @@ except ImportError:
 
 br = Browser()
 
-br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; \
-          rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
+br.addheaders = [('connection', 'keep-alive'), ('Host', 'stackoverflow.com'),
+            ('Referer', 'https://www.google.co.in/'), ('Upgrade-Insecure-Requests', '1'),
+            ('User-Agent','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36')
+]
 br.set_handle_robots(False)
 
-br.open("http://www.spoj.com/")
+br.open("http://www.google.com/")
 
 # br.select_form
