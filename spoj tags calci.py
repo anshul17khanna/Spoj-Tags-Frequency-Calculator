@@ -11,7 +11,7 @@ def is_connected():
      pass
   return False
 if(not is_connected()):
-    print "\nNo Internet Connection Found!!\n"
+    print "\nNo Internet Connection Found!\n"
     sys.exit(1)
 
 try:
