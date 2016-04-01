@@ -52,22 +52,56 @@ for table in soup.find_all('table', attrs={'class': 'table-condensed'}):
             if item.get_text() != '':
                 solved.append(item.get_text())
 
+tags = {}
+
 for i in range(len(solved)):
     url = "http://www.spoj.com/problems/"+solved[i]
     print url+'\n'
+    response = br.open(url)
+
+    find_tag = response.read()
+
+    soup = BeautifulSoup(find_tag, 'html.parser')
+
+    if find_tag.find("no tags") != -1:
+        if 'no_tag' in globals() or 'no_tag' in locals():
+            no_tag.append(solved[i])
+        else:
+            no_tag = []
+            no_tag.append(solved[i])
+    else:
+
+        for get_tag in soup.find_all('span', attrs={'class': 'problem-tag'}):
+
+            if get_tag.get_text() in tags.keys():
+                tags[get_tag.get_text()].append(solved[i])
+            else:
+                tags[get_tag.get_text()] = []
+                tags[get_tag.get_text()].append(solved[i])
+
+tags_length = []
+for tag in tags.keys():
+    tags_length.append((tag, len(tags[tag])))
+
+tags_length.sort(reverse=True, key=lambda tup: tup[1])
+
+for tag in range(len(tags_length)):
+    (a, b) = tags_length[tag]
+    print a + ' : ' + str(b) + '\n'
+
+if 'no_tag' in globals() or 'no_tag' in locals():
+    print 'not tagged : ' + str(len(no_tag)) + '\n'
 
 
 
+'''
+from time import sleep
+import sys
 
-
-
-
-
-
-
-
-
-
-
-
-
+for i in range(21):
+    sys.stdout.write('\r')
+    # the exact output you're looking for:
+    sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
+    sys.stdout.flush()
+    sleep(0.25)
+'''
