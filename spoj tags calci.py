@@ -1,5 +1,8 @@
 import sys
 import socket
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 REMOTE_SERVER = "www.google.com"
 def is_connected():
@@ -24,12 +27,13 @@ try:
     from bs4 import BeautifulSoup
 except ImportError:
     print "\nbs4 not installed, please install using :\npip install beautifulsoup4\n"
+    sys.exit(1)
 
 br = Browser()
 
 br.addheaders = [('connection', 'keep-alive'), ('Host', 'stackoverflow.com'),
     ('Referer', 'https://www.google.co.in/'), ('Upgrade-Insecure-Requests', '1'),
-    ('User-Agent','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36')
+    ('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36')
 ]
 br.set_handle_robots(False)
 
@@ -54,9 +58,19 @@ for table in soup.find_all('table', attrs={'class': 'table-condensed'}):
 
 tags = {}
 
+total = len(solved)
+if total is 0:
+    print "You have not solved any problem successfully!\n"
+    sys.exit(1)
+
+print '\n%s solved problems found.\n' % str(total)
+
+print 'Fetched Tags of Problems...  0 / %s' % str(total)
+countt = 0
+
 for i in range(len(solved)):
     url = "http://www.spoj.com/problems/"+solved[i]
-    print url+'\n'
+
     response = br.open(url)
 
     find_tag = response.read()
@@ -79,29 +93,66 @@ for i in range(len(solved)):
                 tags[get_tag.get_text()] = []
                 tags[get_tag.get_text()].append(solved[i])
 
+    countt += 1
+    print 'Fetchin Tags of Problems...  %d / %d' % (countt, total)
+print '\n'
+
 tags_length = []
 for tag in tags.keys():
     tags_length.append((tag, len(tags[tag])))
+if 'no_tag' in globals() or 'no_tag' in locals():
+    tags_length.append(('Non-tageed', len(no_tag)))
 
 tags_length.sort(reverse=True, key=lambda tup: tup[1])
 
-for tag in range(len(tags_length)):
-    (a, b) = tags_length[tag]
-    print a + ' : ' + str(b) + '\n'
+prelink = 'http://www.spoj.com/problems/'
+for k,v in tags.iteritems():
+    print k.upper()
+    for i in range(len(v)):
+        url = prelink + v[i]
+        print url + '\n'
 
-if 'no_tag' in globals() or 'no_tag' in locals():
-    print 'not tagged : ' + str(len(no_tag)) + '\n'
+class TreeViewFilterWindow(Gtk.Window):
 
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Spoj Tags Frequency Calculator")
+        self.set_border_width(10)
 
+        self.grid = Gtk.Grid()
+        self.grid.set_column_homogeneous(True)
+        self.grid.set_row_homogeneous(True)
+        self.add(self.grid)
 
-'''
-from time import sleep
-import sys
+        self.tags_lengthstore = Gtk.ListStore(str, int)
+        for each in tags_length:
+            self.tags_lengthstore.append(list(each))
 
-for i in range(21):
-    sys.stdout.write('\r')
-    # the exact output you're looking for:
-    sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
-    sys.stdout.flush()
-    sleep(0.25)
-'''
+        self.language_filter = self.tags_lengthstore.filter_new()
+
+        self.treeview = Gtk.TreeView.new_with_model(self.language_filter)
+        for i, column_title in enumerate(["Tags", "Number of Problems"]):
+            renderer = Gtk.CellRendererText()
+            column = Gtk.TreeViewColumn(column_title, renderer, text=i)
+            self.treeview.append_column(column)
+
+        self.buttons = list()
+        for btn in ["Exit"]:
+            button = Gtk.Button(btn)
+            self.buttons.append(button)
+            button.connect("clicked", self.on_selection_button_clicked)
+
+        self.scrollable_treelist = Gtk.ScrolledWindow()
+        self.scrollable_treelist.set_vexpand(True)
+        self.grid.attach(self.scrollable_treelist, 0, 0, 9, 7)
+        self.grid.attach_next_to(self.buttons[0], self.scrollable_treelist, Gtk.PositionType.BOTTOM, 1, 1)
+        self.scrollable_treelist.add(self.treeview)
+
+        self.show_all()
+
+    def on_selection_button_clicked(self, widget):
+        Gtk.main_quit()
+
+win = TreeViewFilterWindow()
+win.connect("delete-event", Gtk.main_quit)
+win.show_all()
+Gtk.main()
