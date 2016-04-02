@@ -1,5 +1,6 @@
 import sys
 import socket
+from time import sleep
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -65,10 +66,10 @@ if total is 0:
 
 print '\n%s solved problems found.\n' % str(total)
 
-print 'Fetched Tags of Problems...  0 / %s' % str(total)
-countt = 0
+print 'Processing tags...\n'
 
 for i in range(len(solved)):
+    x = (float(i)/(total-1)) * 100
     url = "http://www.spoj.com/problems/"+solved[i]
 
     response = br.open(url)
@@ -93,8 +94,9 @@ for i in range(len(solved)):
                 tags[get_tag.get_text()] = []
                 tags[get_tag.get_text()].append(solved[i])
 
-    countt += 1
-    print 'Fetchin Tags of Problems...  %d / %d' % (countt, total)
+    sys.stdout.write('\r')
+    sys.stdout.write("[%-20s] %d%%" % ('=' * (int(x/5.0)), x))
+    sys.stdout.flush()
 print '\n'
 
 tags_length = []
